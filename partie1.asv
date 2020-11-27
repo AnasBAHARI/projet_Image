@@ -4,11 +4,11 @@ clc;
 
 %% Lecture
 
-img = imread('code_barre2.png');
+img = imread('code_barre.png');
 [h, w, c] = size(img);
 fprintf("L'image est une matrice de %s entre %d et %d\n", class(img(10,10,2)), min(img(:)), max(img(:)));
 fprintf("Elle est de dimension: %d*%d*%d\n", h, w, c);
-figure, imshow(img);
+% figure, imshow(img);
 
 % [x, y] = ginput(2);
 % fprintf('les points choisies sont (%i, %i) et (%i, %i)\n', x(1), y(1), x(2), y(2));
