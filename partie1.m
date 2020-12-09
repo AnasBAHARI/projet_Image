@@ -24,6 +24,7 @@ Mu = zeros(nbr_pt, 2);
 Mu(1,:) = [x(1) y(1)];
 Mu(nbr_pt,:) = [x(2) y(2)];
 
+signature_img = zeros(1,nbr_pt);
 signature_img(1) = sum( img( ceil(Mu(1,2)), ceil(Mu(1,1)), :) )/3;
 
 for u=2:nbr_pt-1
@@ -40,7 +41,11 @@ signature_img = signature_img(:);
 
 % figure, hist(signature_img, 256);
 % title("Histogramme des valeurs de la signature");
-hist_img = hist(signature_img, 256);
+fprintf("Signature Image est une matrice de %s entre %d et %d\n", class(min(signature_img)), min(signature_img), max(signature_img));
+[hist_img, interv_centers] = hist(signature_img, 256);
+
+%largeur_intervalle = (max(signature_img) - min(signature_img))/256;
+%seuil = min(signature_img) + k_max*largeur_intervalle - largeur_intervalle/2;
 
 N = 256;
 w = zeros(1,N);
@@ -55,12 +60,13 @@ end
 crit = w.*((mu(1,N)-mu).^2) + (1 - w).*mu.^2;
 [crit_max, k_max] = max(crit);
 
+seuil = interv_centers(k_max);
 
 figure, plot(signature_img);
-hold on, plot(k_max*ones(nbr_pt));
+hold on, plot(seuil*ones(nbr_pt) );
 title("Signature de l'image avec le seuil");
 
-signature_binaire = signature_img > k_max;
+signature_binaire = signature_img > seuil;
 figure, plot(signature_binaire);
 ylim([-0.25 1.25]);
 title("Signature Binaire de l'image");
@@ -83,32 +89,37 @@ end
 fprintf("Indice du premier échantillon: %d, indice du dernier: %d\n", indice_premier, indice_dernier);
 
 [x1, y1] = deal(Mu(indice_premier, 1), Mu(indice_premier, 2));
-[x2, y2] = deal(Mu(indice_dernier, 1), Mu(indice_dernier, 1));
+[x2, y2] = deal(Mu(indice_dernier, 1), Mu(indice_dernier, 2));
+figure, imshow(img), 
+hold on,
+plot(x1,y1, 'r*');
+plot(x2,y2, 'r*');
 
 %% Nouvelle extraction de la signature binaire, cette fois entre le premier et dernier echantillons utiles
 
 Ln2 = sqrt( (x1-x2)^2 + (y1-y2)^2 ); % longueur du segment
 
-nbr_pt2 = round(2*ceil(Ln2)/95)*95;  % Nbr de pt en respectant le Crtr2Shannon et L=95u
+nbr_pt2 = round(4*ceil(Ln2)/95)*95;  % Nbr de pt en respectant le Crtr2Shannon et L=95u
 
 Mu2 = zeros(nbr_pt2, 2);
 Mu2(1,:) = [x1 y1];
 Mu2(nbr_pt2,:) = [x2 y2];
 
+signature_img2 = zeros(1,nbr_pt2);
 signature_img2(1) = sum( img( ceil(Mu2(1,2)), ceil(Mu2(1,1)), :) )/3;
 
 for u=2:nbr_pt2-1
     Mu2(u,:) = Mu2(1,:) + (u/nbr_pt2)*(Mu2(nbr_pt2,:) - Mu2(1,:));
     signature_img2(u) = sum( img( ceil(Mu2(u,2)), ceil(Mu2(u,1)), :) )/3;
 end
-signature_img2(nbr_pt2) = sum( img( ceil(Mu(nbr_pt2,2)), ceil(Mu(nbr_pt2,1)), :) )/3;
+signature_img2(nbr_pt2) = sum( img( ceil(Mu2(nbr_pt2,2)), ceil(Mu2(nbr_pt2,1)), :) )/3;
 signature_img2 = signature_img2(:);
 
 figure, plot(signature_img2);
-hold on, plot(k_max*ones(nbr_pt2));
+hold on, plot(seuil*ones(nbr_pt2));
 title("Signature de l'image entre les points utiles avec le seuil");
 
-signature_binaire2 = signature_img2 > k_max;
+signature_binaire2 = signature_img2 > seuil;
 figure, plot(signature_binaire2);
 ylim([-0.25 1.25]);
 title("Signature Binaire de l'image entre les points utiles");
